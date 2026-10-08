@@ -1,13 +1,6 @@
 import {
   TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  FormLabel,
-  RadioGroup,
   FormControlLabel,
-  Radio,
   Rating,
   Switch,
   Button,
@@ -26,30 +19,20 @@ import {
   Tabs,
   Tab,
   Badge,
-  Slider,
-  Tooltip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
 import { useEffect, useState } from 'react';
-
-type Game = {
-  id: string;
-  title: string;
-  platform: string;
-  status: string;
-  rating: number | null;
-  playTime: number;
-  favorite: boolean;
-};
+import { type Game, initialGame } from './types';
+import GameDialog from './components/GameDialog';
 
 function App() {
-  const [title, setTitle] = useState('');
-  const [platform, setPlatform] = useState('');
-  const [status, setStatus] = useState('未プレイ');
-  const [rating, setRating] = useState<number | null>(0);
-  const [favorite, setFavorite] = useState(false);
+  const [game, setGame] = useState<Game>(initialGame);
+
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [games, setGames] = useState<Game[]>(() => {
     const savedGames = localStorage.getItem('games');
@@ -63,156 +46,52 @@ function App() {
   const [error, setError] = useState('');
   const [editId, setEditId] = useState<string | null>(null);
   const [favoriteOnly, setFavoriteOnly] = useState(false);
-  const [playTime, setPlayTime] = useState(0);
+  const [search, setSearch] = useState('');
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   const resetForm = () => {
+    setGame(initialGame);
     setEditId(null);
-    setTitle('');
-    setPlatform('');
-    setStatus('未プレイ');
-    setRating(0);
-    setPlayTime(0);
-    setFavorite(false);
+    setError('');
+  };
+  const handleSave = () => {
+    if (game.title.trim() === '') {
+      setError('ゲームタイトルを入力してください');
+      return;
+    }
+
+    if (editId !== null) {
+      setGames(games.map((g) =>
+        g.id === editId ? { ...game, id: editId } : g
+      ));
+      setMessage('ゲームを更新しました');
+    } else {
+      setGames([...games, {
+        ...game,
+        id: crypto.randomUUID(),
+      }]);
+      setMessage('ゲームを登録しました');
+    }
+
+    resetForm();
+    setDialogOpen(false);
   };
 
   return (
-    <div className="flex flex-col gap-4 max-w-md px-3 py-3">
+    <div className="flex flex-col gap-4 max-w-md px-8 py-3">
       <h1 className="text-2xl font-bold mb-6">
         ゲーム管理
       </h1>
-
-      <TextField
-        label="ゲームタイトル"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <FormControl>
-        <InputLabel>プラットフォーム</InputLabel>
-
-        <Select
-          value={platform}
-          label="プラットフォーム"
-          onChange={(e) => setPlatform(e.target.value)}
-        >
-          <MenuItem value="Switch">Switch</MenuItem>
-          <MenuItem value="PS5">PS5</MenuItem>
-          <MenuItem value="PC">PC</MenuItem>
-          <MenuItem value="スマートフォン">スマートフォン</MenuItem>
-        </Select>
-      </FormControl>
-      <FormControl>
-        <FormLabel>プレイ状況</FormLabel>
-
-        <RadioGroup
-          row
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-        >
-          <FormControlLabel
-            value="未プレイ"
-            control={<Radio />}
-            label="未プレイ"
-          />
-          <FormControlLabel
-            value="プレイ中"
-            control={<Radio />}
-            label="プレイ中"
-          />
-          <FormControlLabel
-            value="クリア"
-            control={<Radio />}
-            label="クリア"
-          />
-        </RadioGroup>
-      </FormControl>
-      <div>
-        <FormLabel>評価</FormLabel>
-        <Rating
-          value={rating}
-          onChange={(_, newValue) => setRating(newValue)}
-        />
-      </div>
-      <div>
-        <FormLabel>プレイ時間：{playTime}時間</FormLabel>
-        <Tooltip title="これまでにプレイした合計時間を設定します">
-          <Slider
-            value={playTime}
-            onChange={(_, value) => setPlayTime(value as number)}
-            min={0}
-            max={100}
-            step={1}
-          />
-        </Tooltip>
-      </div>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={favorite}
-            onChange={(e) => setFavorite(e.target.checked)}
-          />
-        }
-        label="お気に入り"
-      />
-      {error && (
-        <Alert severity="error">
-          {error}
-        </Alert>
-      )}
       <Button
         variant="contained"
         onClick={() => {
-          if (title.trim() === '') {
-            setError('ゲームタイトルを入力してください');
-            return;
-          }
-          setError('');
-          if (editId !== null) {
-            // 編集
-            setGames(
-              games.map((game) =>
-                game.id === editId
-                  ? {
-                    ...game,
-                    title,
-                    platform,
-                    status,
-                    rating,
-                    playTime,
-                    favorite,
-                  }
-                  : game
-              )
-            );
-
-            setEditId(null);
-            setMessage('ゲームを更新しました');
-          } else {
-            // 新規登録
-            const newGame: Game = {
-              id: crypto.randomUUID(),
-              title,
-              platform,
-              status,
-              rating,
-              playTime,
-              favorite,
-            };
-
-            setGames([...games, newGame]);
-            setMessage('ゲームを登録しました');
-          }
           resetForm();
+          setDialogOpen(true);
         }}
       >
-        {editId !== null ? '更新' : '登録'}
+        新規登録
       </Button>
-      {editId !== null && (
-        <Button
-          onClick={() => { resetForm(); }}
-        >
-          編集をキャンセル
-        </Button>
-      )}
+
 
       <div className="flex items-center gap-2">
         <Typography variant="h6">
@@ -232,6 +111,27 @@ function App() {
         </Badge>
       </div>
 
+      <TextField
+        label="ゲームを検索"
+        size="small"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+        className="mt-4"
+        slotProps={{
+          input: {
+            endAdornment: search && (
+              <InputAdornment position="end">
+                <IconButton
+                  size="small"
+                  onClick={() => setSearch('')}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </InputAdornment>
+            ),
+          },
+        }}
+      />
       <Tabs
         value={filter}
         onChange={(_, newValue) => setFilter(newValue)}
@@ -255,10 +155,11 @@ function App() {
         {games
           .filter((game) =>
             (filter === 'すべて' || game.status === filter) &&
-            (!favoriteOnly || game.favorite)
+            (!favoriteOnly || game.favorite) &&
+            game.title.toLowerCase().includes(search.toLowerCase())
           )
-          .map((game, index) => (
-            <Card key={index}>
+          .map((game) => (
+            <Card key={game.id}>
               <CardContent>
                 <Typography variant="h6">
                   {game.title}
@@ -301,12 +202,9 @@ function App() {
                 <Button
                   onClick={() => {
                     setEditId(game.id);
-                    setTitle(game.title);
-                    setPlatform(game.platform);
-                    setStatus(game.status);
-                    setRating(game.rating);
-                    setPlayTime(game.playTime);
-                    setFavorite(game.favorite);
+                    setGame(game);
+                    setError('');
+                    setDialogOpen(true);
                   }}
                 >
                   編集
@@ -322,6 +220,18 @@ function App() {
           ))}
       </div>
 
+      <GameDialog
+        open={dialogOpen}
+        game={game}
+        setGame={setGame}
+        editId={editId}
+        error={error}
+        onSave={handleSave}
+        onClose={() => {
+          resetForm();
+          setDialogOpen(false);
+        }}
+      />
       <Dialog
         open={deleteId !== null}
         onClose={() => setDeleteId(null)}
