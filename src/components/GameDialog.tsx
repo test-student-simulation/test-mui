@@ -46,7 +46,7 @@ export default function GameDialog({
                 {editId !== null ? 'ゲームを編集' : 'ゲームを登録'}
             </DialogTitle>
 
-            <DialogContent className="flex flex-col gap-4">
+            <DialogContent className="flex flex-col gap-4 pt-4!">
                 <TextField
                     label="ゲームタイトル"
                     value={game.title}

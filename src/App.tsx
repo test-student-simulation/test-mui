@@ -24,6 +24,7 @@ import {
   AccordionDetails,
   InputAdornment,
   IconButton,
+  Pagination,
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
 import { useEffect, useState } from 'react';
@@ -48,6 +49,7 @@ function App() {
   const [favoriteOnly, setFavoriteOnly] = useState(false);
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [page, setPage] = useState(1);
 
   const resetForm = () => {
     setGame(initialGame);
@@ -77,20 +79,39 @@ function App() {
     setDialogOpen(false);
   };
 
+  const filteredGames = games.filter((game) =>
+    (filter === 'すべて' || game.status === filter) &&
+    (!favoriteOnly || game.favorite) &&
+    game.title.toLowerCase().includes(search.toLowerCase())
+  );
+  const pageSize = 5;
+  const pageCount = Math.ceil(filteredGames.length / pageSize);
+  const pagedGames = filteredGames.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
+  useEffect(() => {
+    if (page > Math.max(1, pageCount)) {
+      setPage(Math.max(1, pageCount));
+    }
+  }, [page, pageCount]);
+
   return (
     <div className="flex flex-col gap-4 max-w-md px-8 py-3">
-      <h1 className="text-2xl font-bold mb-6">
-        ゲーム管理
-      </h1>
-      <Button
-        variant="contained"
-        onClick={() => {
-          resetForm();
-          setDialogOpen(true);
-        }}
-      >
-        新規登録
-      </Button>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">
+          ゲーム管理
+        </h1>
+        <Button
+          variant="contained"
+          onClick={() => {
+            resetForm();
+            setDialogOpen(true);
+          }}
+        >
+          新規登録
+        </Button>
+      </div>
 
 
       <div className="flex items-center gap-2">
@@ -115,7 +136,7 @@ function App() {
         label="ゲームを検索"
         size="small"
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         className="mt-4"
         slotProps={{
           input: {
@@ -123,7 +144,7 @@ function App() {
               <InputAdornment position="end">
                 <IconButton
                   size="small"
-                  onClick={() => setSearch('')}
+                  onClick={() => { setSearch(''); setPage(1); }}
                 >
                   <ClearIcon />
                 </IconButton>
@@ -134,7 +155,7 @@ function App() {
       />
       <Tabs
         value={filter}
-        onChange={(_, newValue) => setFilter(newValue)}
+        onChange={(_, newValue) => { setFilter(newValue); setPage(1); }}
       >
         <Tab label="すべて" value="すべて" />
         <Tab label="未プレイ" value="未プレイ" />
@@ -145,79 +166,80 @@ function App() {
         control={
           <Switch
             checked={favoriteOnly}
-            onChange={(e) => setFavoriteOnly(e.target.checked)}
+            onChange={(e) => { setFavoriteOnly(e.target.checked); setPage(1); }}
           />
         }
         label="お気に入りのみ"
       />
-
+      {pageCount > 1 && (
+        <Pagination
+          count={pageCount}
+          page={page}
+          onChange={(_, value) => setPage(value)}
+          color="primary"
+        />
+      )}
       <div className="flex flex-col gap-3 mt-8 max-w-md">
-        {games
-          .filter((game) =>
-            (filter === 'すべて' || game.status === filter) &&
-            (!favoriteOnly || game.favorite) &&
-            game.title.toLowerCase().includes(search.toLowerCase())
-          )
-          .map((game) => (
-            <Card key={game.id}>
-              <CardContent>
-                <Typography variant="h6">
-                  {game.title}
-                </Typography>
+        {pagedGames.map((game) => (
+          <Card key={game.id}>
+            <CardContent>
+              <Typography variant="h6">
+                {game.title}
+              </Typography>
 
-                <Typography color="text.secondary">
-                  {game.platform}
-                </Typography>
+              <Typography color="text.secondary">
+                {game.platform}
+              </Typography>
 
-                <Chip
-                  label={game.status}
-                  size="small"
-                />
+              <Chip
+                label={game.status}
+                size="small"
+              />
 
-                <Rating
-                  value={game.rating}
-                  readOnly
-                />
+              <Rating
+                value={game.rating}
+                readOnly
+              />
 
-                <Accordion>
-                  <AccordionSummary expandIcon={<span>▼</span>}>
-                    <Typography>詳細情報</Typography>
-                  </AccordionSummary>
+              <Accordion>
+                <AccordionSummary expandIcon={<span>▼</span>}>
+                  <Typography>詳細情報</Typography>
+                </AccordionSummary>
 
-                  <AccordionDetails>
+                <AccordionDetails>
 
+                  <Typography>
+                    プレイ時間：{game.playTime}時間
+                  </Typography>
+
+                  {game.favorite && (
                     <Typography>
-                      プレイ時間：{game.playTime}時間
+                      ★ お気に入り
                     </Typography>
-
-                    {game.favorite && (
-                      <Typography>
-                        ★ お気に入り
-                      </Typography>
-                    )}
-                  </AccordionDetails>
-                </Accordion>
-              </CardContent>
-              <CardActions>
-                <Button
-                  onClick={() => {
-                    setEditId(game.id);
-                    setGame(game);
-                    setError('');
-                    setDialogOpen(true);
-                  }}
-                >
-                  編集
-                </Button>
-                <Button
-                  color="error"
-                  onClick={() => setDeleteId(game.id)}
-                >
-                  削除
-                </Button>
-              </CardActions>
-            </Card>
-          ))}
+                  )}
+                </AccordionDetails>
+              </Accordion>
+            </CardContent>
+            <CardActions>
+              <Button
+                onClick={() => {
+                  setEditId(game.id);
+                  setGame(game);
+                  setError('');
+                  setDialogOpen(true);
+                }}
+              >
+                編集
+              </Button>
+              <Button
+                color="error"
+                onClick={() => setDeleteId(game.id)}
+              >
+                削除
+              </Button>
+            </CardActions>
+          </Card>
+        ))}
       </div>
 
       <GameDialog
@@ -280,6 +302,7 @@ function App() {
         </Alert>
       </Snackbar>
     </div>
+
   );
 }
 
