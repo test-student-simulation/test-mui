@@ -1,9 +1,6 @@
 import {
     TextField,
     FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
     FormLabel,
     RadioGroup,
     FormControlLabel,
@@ -18,6 +15,7 @@ import {
     Alert,
     Slider,
     Tooltip,
+    Autocomplete,
 } from '@mui/material';
 import { type Game } from '../types';
 
@@ -52,20 +50,17 @@ export default function GameDialog({
                     value={game.title}
                     onChange={(e) => setGame({ ...game, title: e.target.value })}
                 />
-                <FormControl>
-                    <InputLabel>プラットフォーム</InputLabel>
-
-                    <Select
-                        value={game.platform}
-                        label="プラットフォーム"
-                        onChange={(e) => setGame({ ...game, platform: e.target.value })}
-                    >
-                        <MenuItem value="Switch">Switch</MenuItem>
-                        <MenuItem value="PS5">PS5</MenuItem>
-                        <MenuItem value="PC">PC</MenuItem>
-                        <MenuItem value="スマートフォン">スマートフォン</MenuItem>
-                    </Select>
-                </FormControl>
+                <Autocomplete
+                    freeSolo
+                    options={['Switch', 'PS5', 'PC', 'スマートフォン']}
+                    value={game.platform}
+                    onInputChange={(_, value) =>
+                        setGame({ ...game, platform: value })
+                    }
+                    renderInput={(params) => (
+                        <TextField {...params} label="プラットフォーム" />
+                    )}
+                />
                 <FormControl>
                     <FormLabel>プレイ状況</FormLabel>
 

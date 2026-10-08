@@ -97,212 +97,213 @@ function App() {
   }, [page, pageCount]);
 
   return (
-    <div className="flex flex-col gap-4 max-w-md px-8 py-3">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">
-          ゲーム管理
-        </h1>
-        <Button
-          variant="contained"
-          onClick={() => {
-            resetForm();
-            setDialogOpen(true);
-          }}
-        >
-          新規登録
-        </Button>
-      </div>
-
-
-      <div className="flex items-center gap-2">
-        <Typography variant="h6">
-          ゲーム一覧
-        </Typography>
-
-        <Chip
-          label={games.length}
-          size="small"
-          color="primary"
-        />
-        <Badge
-          badgeContent={games.length}
-          color="primary"
-        >
-          <span>登録数</span>
-        </Badge>
-      </div>
-
-      <TextField
-        label="ゲームを検索"
-        size="small"
-        value={search}
-        onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-        className="mt-4"
-        slotProps={{
-          input: {
-            endAdornment: search && (
-              <InputAdornment position="end">
-                <IconButton
-                  size="small"
-                  onClick={() => { setSearch(''); setPage(1); }}
-                >
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          },
-        }}
-      />
-      <Tabs
-        value={filter}
-        onChange={(_, newValue) => { setFilter(newValue); setPage(1); }}
-      >
-        <Tab label="すべて" value="すべて" />
-        <Tab label="未プレイ" value="未プレイ" />
-        <Tab label="プレイ中" value="プレイ中" />
-        <Tab label="クリア" value="クリア" />
-      </Tabs>
-      <FormControlLabel
-        control={
-          <Switch
-            checked={favoriteOnly}
-            onChange={(e) => { setFavoriteOnly(e.target.checked); setPage(1); }}
-          />
-        }
-        label="お気に入りのみ"
-      />
-      {pageCount > 1 && (
-        <Pagination
-          count={pageCount}
-          page={page}
-          onChange={(_, value) => setPage(value)}
-          color="primary"
-        />
-      )}
-      <div className="flex flex-col gap-3 mt-8 max-w-md">
-        {pagedGames.map((game) => (
-          <Card key={game.id}>
-            <CardContent>
-              <Typography variant="h6">
-                {game.title}
-              </Typography>
-
-              <Typography color="text.secondary">
-                {game.platform}
-              </Typography>
-
-              <Chip
-                label={game.status}
-                size="small"
-              />
-
-              <Rating
-                value={game.rating}
-                readOnly
-              />
-
-              <Accordion>
-                <AccordionSummary expandIcon={<span>▼</span>}>
-                  <Typography>詳細情報</Typography>
-                </AccordionSummary>
-
-                <AccordionDetails>
-
-                  <Typography>
-                    プレイ時間：{game.playTime}時間
-                  </Typography>
-
-                  {game.favorite && (
-                    <Typography>
-                      ★ お気に入り
-                    </Typography>
-                  )}
-                </AccordionDetails>
-              </Accordion>
-            </CardContent>
-            <CardActions>
-              <Button
-                onClick={() => {
-                  setEditId(game.id);
-                  setGame(game);
-                  setError('');
-                  setDialogOpen(true);
-                }}
-              >
-                編集
-              </Button>
-              <Button
-                color="error"
-                onClick={() => setDeleteId(game.id)}
-              >
-                削除
-              </Button>
-            </CardActions>
-          </Card>
-        ))}
-      </div>
-
-      <GameDialog
-        open={dialogOpen}
-        game={game}
-        setGame={setGame}
-        editId={editId}
-        error={error}
-        onSave={handleSave}
-        onClose={() => {
-          resetForm();
-          setDialogOpen(false);
-        }}
-      />
-      <Dialog
-        open={deleteId !== null}
-        onClose={() => setDeleteId(null)}
-      >
-        <DialogTitle>ゲームを削除</DialogTitle>
-
-        <DialogContent>
-          <DialogContentText>
-            本当に削除しますか？
-          </DialogContentText>
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setDeleteId(null)}>
-            キャンセル
-          </Button>
-
+    <div className="min-h-screen bg-slate-100 px-6 py-6">
+      <div className="mx-auto flex max-w-2xl flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold">
+            ゲーム管理
+          </h1>
           <Button
-            color="error"
+            variant="contained"
             onClick={() => {
-              if (deleteId !== null) {
-                setGames(games.filter((game) => game.id !== deleteId));
-                setDeleteId(null);
-                setMessage('ゲームを削除しました');
-                if (editId === deleteId) {
-                  resetForm();
-                }
-              }
+              resetForm();
+              setDialogOpen(true);
             }}
           >
-            削除
+            新規登録
           </Button>
-        </DialogActions>
-      </Dialog>
+        </div>
 
-      <Snackbar
-        open={message !== ''}
-        autoHideDuration={3000}
-        onClose={() => setMessage('')}
-      >
-        <Alert
-          severity="success"
+
+        <div className="flex items-center gap-2">
+          <Typography variant="h6">
+            ゲーム一覧
+          </Typography>
+
+          <Chip
+            label={games.length}
+            size="small"
+            color="primary"
+          />
+          <Badge
+            badgeContent={games.length}
+            color="primary"
+          >
+            <span>登録数</span>
+          </Badge>
+        </div>
+
+        <TextField
+          label="ゲームを検索"
+          size="small"
+          value={search}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+          className="mt-4"
+          slotProps={{
+            input: {
+              endAdornment: search && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => { setSearch(''); setPage(1); }}
+                  >
+                    <ClearIcon />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+        />
+        <Tabs
+          value={filter}
+          onChange={(_, newValue) => { setFilter(newValue); setPage(1); }}
+        >
+          <Tab label="すべて" value="すべて" />
+          <Tab label="未プレイ" value="未プレイ" />
+          <Tab label="プレイ中" value="プレイ中" />
+          <Tab label="クリア" value="クリア" />
+        </Tabs>
+        <FormControlLabel
+          control={
+            <Switch
+              checked={favoriteOnly}
+              onChange={(e) => { setFavoriteOnly(e.target.checked); setPage(1); }}
+            />
+          }
+          label="お気に入りのみ"
+        />
+        {pageCount > 1 && (
+          <Pagination
+            count={pageCount}
+            page={page}
+            onChange={(_, value) => setPage(value)}
+            color="primary"
+          />
+        )}
+        <div className="flex flex-col gap-3 mt-8 max-w-md">
+          {pagedGames.map((game) => (
+            <Card key={game.id}>
+              <CardContent>
+                <Typography variant="h6">
+                  {game.title}
+                </Typography>
+
+                <Typography color="text.secondary">
+                  {game.platform}
+                </Typography>
+
+                <Chip
+                  label={game.status}
+                  size="small"
+                />
+
+                <Rating
+                  value={game.rating}
+                  readOnly
+                />
+
+                <Accordion>
+                  <AccordionSummary expandIcon={<span>▼</span>}>
+                    <Typography>詳細情報</Typography>
+                  </AccordionSummary>
+
+                  <AccordionDetails>
+
+                    <Typography>
+                      プレイ時間：{game.playTime}時間
+                    </Typography>
+
+                    {game.favorite && (
+                      <Typography>
+                        ★ お気に入り
+                      </Typography>
+                    )}
+                  </AccordionDetails>
+                </Accordion>
+              </CardContent>
+              <CardActions>
+                <Button
+                  onClick={() => {
+                    setEditId(game.id);
+                    setGame(game);
+                    setError('');
+                    setDialogOpen(true);
+                  }}
+                >
+                  編集
+                </Button>
+                <Button
+                  color="error"
+                  onClick={() => setDeleteId(game.id)}
+                >
+                  削除
+                </Button>
+              </CardActions>
+            </Card>
+          ))}
+        </div>
+
+        <GameDialog
+          open={dialogOpen}
+          game={game}
+          setGame={setGame}
+          editId={editId}
+          error={error}
+          onSave={handleSave}
+          onClose={() => {
+            resetForm();
+            setDialogOpen(false);
+          }}
+        />
+        <Dialog
+          open={deleteId !== null}
+          onClose={() => setDeleteId(null)}
+        >
+          <DialogTitle>ゲームを削除</DialogTitle>
+
+          <DialogContent>
+            <DialogContentText>
+              本当に削除しますか？
+            </DialogContentText>
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={() => setDeleteId(null)}>
+              キャンセル
+            </Button>
+
+            <Button
+              color="error"
+              onClick={() => {
+                if (deleteId !== null) {
+                  setGames(games.filter((game) => game.id !== deleteId));
+                  setDeleteId(null);
+                  setMessage('ゲームを削除しました');
+                  if (editId === deleteId) {
+                    resetForm();
+                  }
+                }
+              }}
+            >
+              削除
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={message !== ''}
+          autoHideDuration={3000}
           onClose={() => setMessage('')}
         >
-          {message}
-        </Alert>
-      </Snackbar>
+          <Alert
+            severity="success"
+            onClose={() => setMessage('')}
+          >
+            {message}
+          </Alert>
+        </Snackbar>
+      </div>
     </div>
-
   );
 }
 
