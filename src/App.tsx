@@ -18,15 +18,17 @@ import {
   Alert,
   Tabs,
   Tab,
-  Badge,
   Accordion,
   AccordionSummary,
   AccordionDetails,
   InputAdornment,
   IconButton,
   Pagination,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
 import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
 import { useEffect, useState } from 'react';
 import { type Game, initialGame } from './types';
 import GameDialog from './components/GameDialog';
@@ -97,7 +99,7 @@ function App() {
   }, [page, pageCount]);
 
   return (
-    <div className="min-h-screen bg-slate-100 px-6 py-6">
+    <div className="min-h-screen px-6 py-6">
       <div className="mx-auto flex max-w-2xl flex-col gap-4">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">
@@ -114,6 +116,67 @@ function App() {
           </Button>
         </div>
 
+        <div className="flex flex-col gap-4 rounded-xl bg-white p-4 shadow-sm">
+          <TextField
+            label="ゲームを検索"
+            placeholder="タイトルで検索"
+            size="small"
+            value={search}
+            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            className="mt-4"
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: search && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => { setSearch(''); setPage(1); }}
+                    >
+                      <ClearIcon />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              },
+            }}
+          />
+
+          <div className="flex flex-col gap-1">
+            <Typography variant="subtitle2" color="text.secondary">
+              プレイ状況で絞り込み
+            </Typography>
+            <ToggleButtonGroup
+              value={filter}
+              exclusive
+              size="small"
+              onChange={(_, value) => {
+                if (value !== null) {
+                  setFilter(value);
+                  setPage(1);
+                }
+              }}
+            >
+              <ToggleButton value="すべて">すべて</ToggleButton>
+              <ToggleButton value="未プレイ">未プレイ</ToggleButton>
+              <ToggleButton value="プレイ中">プレイ中</ToggleButton>
+              <ToggleButton value="クリア">クリア</ToggleButton>
+            </ToggleButtonGroup>
+          </div>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={favoriteOnly}
+                onChange={(e) => { setFavoriteOnly(e.target.checked); setPage(1); }}
+              />
+            }
+            label="お気に入りのみ"
+          />
+        </div>
 
         <div className="flex items-center gap-2">
           <Typography variant="h6">
@@ -121,66 +184,28 @@ function App() {
           </Typography>
 
           <Chip
-            label={games.length}
+            label={filteredGames.length}
             size="small"
-            color="primary"
+            variant="outlined"
           />
-          <Badge
+          {/* <Badge
             badgeContent={games.length}
             color="primary"
           >
             <span>登録数</span>
-          </Badge>
+          </Badge> */}
+
+          {pageCount > 1 && (
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={(_, value) => setPage(value)}
+              color="primary"
+            />
+          )}
         </div>
 
-        <TextField
-          label="ゲームを検索"
-          size="small"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          className="mt-4"
-          slotProps={{
-            input: {
-              endAdornment: search && (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => { setSearch(''); setPage(1); }}
-                  >
-                    <ClearIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-        <Tabs
-          value={filter}
-          onChange={(_, newValue) => { setFilter(newValue); setPage(1); }}
-        >
-          <Tab label="すべて" value="すべて" />
-          <Tab label="未プレイ" value="未プレイ" />
-          <Tab label="プレイ中" value="プレイ中" />
-          <Tab label="クリア" value="クリア" />
-        </Tabs>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={favoriteOnly}
-              onChange={(e) => { setFavoriteOnly(e.target.checked); setPage(1); }}
-            />
-          }
-          label="お気に入りのみ"
-        />
-        {pageCount > 1 && (
-          <Pagination
-            count={pageCount}
-            page={page}
-            onChange={(_, value) => setPage(value)}
-            color="primary"
-          />
-        )}
-        <div className="flex flex-col gap-3 mt-8 max-w-md">
+        <div className="flex flex-col gap-3 max-w-md">
           {pagedGames.map((game) => (
             <Card key={game.id}>
               <CardContent>
